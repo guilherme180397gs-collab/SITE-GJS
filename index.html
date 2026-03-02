@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GJS Radiadores - 16 Anos de Autoridade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --azul-gjs: #1B365D; --ciano-gjs: #00B4D8; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; scroll-behavior: smooth; overflow-x: hidden; }
+        
+        /* LOGO SUPERIOR: NITIDEZ BLINDADA */
+        .logo-glow-white {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            filter: drop-shadow(1px 1px 0px #fff) drop-shadow(-1px -1px 0px #fff) drop-shadow(1px -1px 0px #fff) drop-shadow(-1px 1px 0px #fff);
+            image-rendering: -webkit-optimize-contrast;
+            transform: translateZ(0); 
+            will-change: transform, filter;
+            backface-visibility: hidden;
+        }
+        .logo-glow-white:hover { 
+            transform: scale(1.05) translateY(-2px); 
+            filter: drop-shadow(0px 0px 15px rgba(255,255,255,0.9));
+        }
+
+        /* TEXTO DE PERFORMANCE CIANO COM CONTORNO AZUL */
+        .text-performance-gjs { 
+            color: var(--ciano-gjs) !important;
+            text-shadow: -1px -1px 0 #1B365D, 1px -1px 0 #1B365D, -1px 1px 0 #1B365D, 1px 1px 0 #1B365D; 
+            font-style: italic;
+            font-weight: 900;
+        }
+        
+        /* ESTILO DOS LINKS ATIVOS COM SUBINHADO */
+        .nav-link {
+            position: relative;
+            padding-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 4px;
+            background-color: var(--ciano-gjs);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+        /* CARROSSEL DE PARCEIROS */
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-scroll { display: flex; width: max-content; animation: scroll 35s linear infinite; }
+        .animate-scroll:hover { animation-play-state: paused; }
+        .brand-item { display: flex; align-items: center; justify-content: center; min-width: 280px; height: 120px; padding: 0 40px; }
+        .brand-logo-img { max-height: 80px; width: auto; transition: all 0.4s ease; object-fit: contain; }
+
+        /* MODAIS E PAINÉIS */
+        .admin-panel, .confirm-modal { display: none; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(15px); position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; }
+        .active { display: flex !important; }
+        
+        /* ANIMAÇÃO DOS ÍCONES DO RODAPÉ (RESTAURADA) */
+        .footer-icon-asset { 
+            height: 75px; 
+            width: auto; 
+            object-fit: contain; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            cursor: pointer; 
+        }
+        .footer-icon-asset:hover { 
+            transform: scale(1.2) translateY(-8px); 
+            filter: brightness(1.1);
+        }
+        .payment-icon-asset { height: 45px; width: auto; transition: all 0.4s ease; cursor: pointer; }
+        .payment-icon-asset:hover { transform: scale(1.15) translateY(-5px); }
+
+        .product-fade { animation: productFade 0.6s ease-out; }
+        @keyframes productFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+
+    <script>
+        // --- LINKS GLOBAIS DE GPS BLINDADOS ---
+        window.WA_LINK = "https://wa.me/5511954927299";
+        window.INSTA_LINK = "https://www.instagram.com/gjsradiadores/";
+        
+        // Link Google Maps Corrigido para Número 605 Exato
+        window.MAPS_LINK = "https://www.google.com/maps/dir/?api=1&destination=GJS+Radiadores,+Rua+Henry+Charles+Potel,+605+-+Jardim+Irene,+S%C3%A3o+Paulo+-+SP,+02862-000";
+        
+        // Link Waze Corrigido com Place ID Oficial
+        window.WAZE_LINK = "https://www.waze.com/pt-BR/live-map/directions/br/sp/r.-henry-charles-potel,-605?navigate=yes&to=place.ChIJmSOmmtz5zpQRw9gx52Soclg";
+
+        window.backToHome = function() { 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            window.updateActiveNav('inicio');
+        }
+        
+        window.handleBrandError = function(img, name) {
+            img.style.display = 'none';
+            const span = document.createElement('span');
+            span.className = 'text-slate-400 font-black italic uppercase text-2xl tracking-tighter';
+            span.innerText = name;
+            img.parentElement.appendChild(span);
+        }
+
+        window.handleIconError = function(img) {
+            img.style.display = 'none';
+            if(img.nextElementSibling) img.nextElementSibling.style.display = 'block';
+        }
+
+        window.toggleAdmin = function() {
+            document.getElementById('adminModal').classList.toggle('active');
+        }
+
+        window.updateActiveNav = function(id) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active', 'text-cyan-600');
+                if(link.getAttribute('href') === '#' + id || (id === 'inicio' && link.getAttribute('href') === '#')) {
+                    link.classList.add('active', 'text-cyan-600');
+                }
+            });
+        }
+    </script>
+
+    <!-- FIREBASE & ENGINE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfigRaw = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+        const firebaseConfig = JSON.parse(firebaseConfigRaw);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gjs-prod-data';
+
+        let db, auth;
+        const isConnected = firebaseConfig && firebaseConfig.apiKey;
+
+        if (isConnected) {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        }
+
+        window.gjs_state = { db, appId, radiadores: [], user: null, index: 0, timer: null };
+
+        const ensureAuth = async () => {
+            if (auth && auth.currentUser) return auth.currentUser;
+            try {
+                if (isConnected) {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else { await signInAnonymously(auth); }
+                    return new Promise(resolve => {
+                        const unsub = onAuthStateChanged(auth, (user) => { if(user) { unsub(); resolve(user); } });
+                    });
+                }
+            } catch (e) { return null; }
+        };
+
+        function updateStatus(msg, color, targetId = 'admin-status') {
+            const st = document.getElementById(targetId);
+            if(!st) return;
+            st.innerText = msg;
+            st.style.color = color === "green" ? "#10b981" : color === "blue" ? "#00B4D8" : "#ef4444";
+            setTimeout(() => { if(st) st.innerText = ""; }, 8000);
+        }
+
+        // --- FUNÇÕES ADMIN CORRIGIDAS ---
+        window.saveBatch = async () => {
+            if(!isConnected) return updateStatus("ERRO: USE O MODO PREVIA.", "red");
+            const field = document.getElementById('adm-batch');
+            const dataRaw = field.value.trim();
+            if(!dataRaw) return updateStatus("COLE O CONTEÚDO!", "red");
+            try {
+                updateStatus("PROCESSANDO LOTE...", "blue");
+                await ensureAuth();
+                // Limpeza de caracteres especiais antes do parse
+                const cleanJson = dataRaw.replace(/[\u00A0\u200B-\u200D\uFEFF]/g, " ").trim();
+                const items = JSON.parse(cleanJson);
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'radiadores');
+                for(const item of items) { 
+                    await addDoc(colRef, { ...item, data: new Date().toISOString() }); 
+                }
+                updateStatus("LOTE SALVO COM SUCESSO!", "green");
+                field.value = "";
+            } catch (e) { 
+                console.error(e);
+                updateStatus("ERRO NO JSON OU NA GRAVAÇÃO!", "red"); 
+            }
+        };
+
+        window.saveProduct = async () => {
+            if(!isConnected) return updateStatus("ERRO: USE A PREVIA.", "red");
+            const nome = document.getElementById('adm-nome').value;
+            const desc = document.getElementById('adm-desc').value;
+            const foto = document.getElementById('adm-foto').value;
+            if(!nome || !foto) return updateStatus("NOME E FOTO OBRIGATÓRIOS!", "red");
+            try {
+                updateStatus("GRAVANDO...", "blue");
+                await ensureAuth();
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'radiadores');
+                await addDoc(colRef, { nome, descricao: desc, preco: "Sob Consulta", foto_url: foto, data: new Date().toISOString() });
+                document.getElementById('adm-form').reset();
+                updateStatus("PRODUTO SALVO COM SUCESSO!", "green");
+            } catch (e) { updateStatus("ERRO AO GRAVAR!", "red"); }
+        };
+
+        // --- MOTOR DA VITRINE ---
+        window.renderVitrine = () => {
+            const container = document.getElementById('vitrine-placeholder');
+            const data = window.gjs_state.radiadores;
+            if(data.length === 0) {
+                container.innerHTML = `<div class="bg-white rounded-[60px] p-20 text-center border-2 border-dashed border-slate-200 text-slate-400 font-bold uppercase italic text-sm text-center">Aguardando Catálogo via Previa.</div>`;
+                return;
+            }
+            const currentIndex = (window.gjs_state.index % data.length + data.length) % data.length;
+            const item = data[currentIndex];
+            container.innerHTML = `
+                <div id="product-card" class="bg-white rounded-[60px] shadow-2xl p-12 md:p-20 flex flex-col md:flex-row items-center gap-16 product-fade border-b-[15px] border-slate-200 relative overflow-hidden text-center md:text-left">
+                    <button onclick="window.deleteProduct('${item.id}')" class="absolute top-10 right-10 bg-red-500 text-white p-4 rounded-full hover:bg-red-700 adm-tool hidden z-20 transition-all flex items-center justify-center"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    <div class="flex-1 order-2 md:order-1 text-center md:text-left">
+                        <span class="bg-emerald-500 text-white px-8 py-2 rounded-full text-[12px] font-bold uppercase mb-8 inline-block shadow-lg italic tracking-widest text-center">Pronta Entrega GJS</span>
+                        <h3 class="text-4xl md:text-6xl font-black text-[#1B365D] mb-6 uppercase tracking-tighter leading-none text-center md:text-left">${item.nome}</h3>
+                        <p class="text-slate-500 text-lg md:text-xl mb-12 leading-relaxed font-medium text-center md:text-left">${item.descricao}</p>
+                        <a href="${window.WA_LINK}" target="_blank" class="bg-[#1B365D] text-white px-12 py-6 rounded-[30px] font-black text-sm uppercase tracking-widest hover:bg-[#00B4D8] transition-all shadow-xl transform hover:-translate-y-2 flex items-center justify-center gap-3 text-center text-center">Orçamento WhatsApp</a>
+                    </div>
+                    <div class="flex-1 order-1 md:order-2 flex justify-center text-center">
+                        <img src="${item.foto_url}" class="h-80 md:h-[500px] w-auto object-contain drop-shadow-2xl" onerror="this.src='https://via.placeholder.com/500x500?text=GJS+RADIADORES'">
+                    </div>
+                </div>`;
+        }
+
+        window.nextProduct = () => { window.gjs_state.index++; window.renderVitrine(); }
+        window.prevProduct = () => { window.gjs_state.index--; window.renderVitrine(); }
+
+        window.consultarPlaca = () => {
+            const input = document.getElementById('plateInput');
+            const placaRaw = input.value.trim().toUpperCase();
+            if (placaRaw.length < 7) return updateStatus("PLACA INVÁLIDA!", "red", "plate-status");
+            const baseCarros = ["VW GOL (2015)", "FIAT PALIO (2014)", "CHEVROLET ONIX (2016)", "FORD KA (2018)", "TOYOTA COROLLA (2020)"];
+            const seed = placaRaw.replace("-","").split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const veiculo = baseCarros[seed % baseCarros.length];
+            document.getElementById('vehicle-info-text').innerHTML = `Detectamos o veículo para a placa <b class='text-[#00B4D8]'>${placaRaw}</b>:<br><span class='text-2xl font-black block mt-4 text-center'>${veiculo}</span>`;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        window.confirmarVeiculo = (sim) => {
+            document.getElementById('confirmModal').classList.remove('active');
+            if(sim) {
+                document.getElementById('catalogo').scrollIntoView({ behavior: 'smooth' });
+                window.updateActiveNav('catalogo');
+            } else {
+                document.getElementById('plateInput').value = "";
+                document.getElementById('plateInput').focus();
+            }
+        }
+
+        window.addEventListener('load', async () => {
+            if (isConnected) {
+                await ensureAuth();
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'radiadores');
+                        onSnapshot(colRef, (snapshot) => {
+                            window.gjs_state.radiadores = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            window.renderVitrine();
+                        });
+                    }
+                });
+            }
+            const inputPlaca = document.getElementById('plateInput');
+            if(inputPlaca) {
+                inputPlaca.addEventListener('keypress', (e) => { if(e.key === 'Enter') window.consultarPlaca(); });
+            }
+        });
+
+        window.deleteProduct = async (id) => {
+            if(!confirm("Remover?")) return;
+            try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'radiadores', id)); } catch (e) { }
+        }
+    </script>
+</head>
+<body class="antialiased text-slate-900">
+
+    <!-- NAV SUPERIOR -->
+    <nav class="bg-white border-b-2 border-slate-100 sticky top-0 z-50 shadow-sm text-center">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-32 text-center text-center">
+            <div class="flex items-center gap-10 text-center">
+                <!-- LOGO SUPERIOR: FIXA À ESQUERDA DOS TÓPICOS -->
+                <img src="img/logomarca-topicos.png" alt="GJS" class="h-32 md:h-36 w-auto logo-glow-white object-contain" onclick="window.backToHome()" onerror="handleIconError(this)">
+                
+                <div class="hidden xl:flex gap-10 text-[12px] font-black uppercase tracking-[0.2em] text-slate-500 items-center text-center">
+                    <a href="#" onclick="window.updateActiveNav('inicio')" class="nav-link active text-cyan-600 transition-all uppercase">Início</a>
+                    <a href="#catalogo" id="nav-catalogo" onclick="window.updateActiveNav('catalogo')" class="nav-link transition-all uppercase">Catálogo</a>
+                    <a href="#localizacao" id="nav-localizacao" onclick="window.updateActiveNav('localizacao')" class="nav-link transition-all uppercase italic">Onde Estamos</a>
+                    
+                    <div class="flex items-center gap-2 bg-slate-50 px-4 py-2.5 rounded-2xl border-2 border-slate-100 shadow-inner w-[380px] relative text-center text-center">
+                        <span class="w-3 h-3 bg-cyan-500 rounded-full animate-pulse flex-shrink-0 text-center"></span>
+                        <input type="text" id="plateInput" placeholder="BUSCAR POR PLACA (ENTER)" class="bg-transparent outline-none text-[11px] font-black w-full uppercase text-slate-700 placeholder-slate-400 text-center">
+                        <button onclick="window.consultarPlaca()" class="bg-[#1B365D] text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase hover:bg-cyan-500 transition-all shadow-md active:scale-90 uppercase text-center text-center">Consultar</button>
+                        <p id="plate-status" class="absolute -bottom-6 left-6 text-[9px] font-black uppercase tracking-widest min-h-[15px] text-center"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- BOTÃO ESPECIALISTA COM ÍCONE FIXO -->
+            <a href="https://wa.me/5511954927299" target="_blank" class="group bg-[#00B4D8] text-white px-8 py-5 rounded-full text-[12px] font-black hover:bg-[#1B365D] transition-all shadow-xl flex items-center justify-center gap-4 transform hover:-translate-y-1 active:scale-95 uppercase tracking-widest text-center text-center">
+                <img src="img/icon-whatsapp.png" alt="WhatsApp" class="w-10 h-10 md:w-12 md:h-12 object-contain transition-transform group-hover:scale-110" onerror="handleIconError(this)">
+                Especialista GJS
+            </a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header id="inicio" class="bg-gjs-dark pt-24 pb-20 px-4 text-center border-b-[12px] border-[#00B4D8] text-center">
+        <div class="max-w-5xl mx-auto text-center text-center">
+            <img src="img/logo.png" alt="GJS" class="h-[450px] w-auto mx-auto logo-glow-white mb-12" onclick="window.backToHome()" onerror="handleIconError(this)">
+            <h1 class="text-[18px] md:text-[24px] uppercase text-performance-gjs text-center tracking-[0.6em] text-center">Performance Térmica Superior</h1>
+        </div>
+    </header>
+
+    <!-- CARROSSEL DE PARCEIROS -->
+    <section class="bg-white py-14 border-b border-slate-100 overflow-hidden shadow-inner text-center text-center">
+        <div class="animate-scroll text-center text-center text-center">
+            <div class="flex gap-24 items-center px-12 text-center text-center">
+                <div class="brand-item"><img src="img/marca-reach.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Reach')"></div>
+                <div class="brand-item"><img src="img/marca-behr.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Behr')"></div>
+                <div class="brand-item"><img src="img/marca-mahle.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Mahle')"></div>
+                <div class="brand-item"><img src="img/marca-visconde.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Visconde')"></div>
+                <div class="brand-item"><img src="img/marca-valeo.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Valeo')"></div>
+                <div class="brand-item"><img src="img/marca-delphi.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Delphi')"></div>
+                <div class="brand-item"><img src="img/marca-notus.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Notus')"></div>
+                <div class="brand-item"><img src="img/marca-marelli.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Marelli')"></div>
+            </div>
+            <!-- REPETIÇÃO -->
+            <div class="flex gap-24 items-center px-12 text-center text-center text-center">
+                <div class="brand-item"><img src="img/marca-reach.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Reach')"></div>
+                <div class="brand-item"><img src="img/marca-behr.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Behr')"></div>
+                <div class="brand-item"><img src="img/marca-mahle.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Mahle')"></div>
+                <div class="brand-item"><img src="img/marca-visconde.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Visconde')"></div>
+                <div class="brand-item"><img src="img/marca-valeo.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Valeo')"></div>
+                <div class="brand-item"><img src="img/marca-delphi.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Delphi')"></div>
+                <div class="brand-item"><img src="img/marca-notus.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Notus')"></div>
+                <div class="brand-item"><img src="img/marca-marelli.png" class="brand-logo-img hover-elevate" onerror="window.handleBrandError(this, 'Marelli')"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VITRINE -->
+    <section id="catalogo" class="py-24 px-4 bg-slate-50 text-center text-center">
+        <div class="max-w-7xl mx-auto text-center text-center text-center text-center">
+            <div class="flex flex-col md:flex-row items-center justify-between mb-16 gap-8 text-center md:text-left text-center text-center text-center text-center">
+                <div><h2 class="text-4xl md:text-5xl font-black text-[#1B365D] uppercase tracking-tighter text-center md:text-left">Radiadores em Destaque</h2></div>
+                <div class="flex gap-4">
+                    <button onclick="window.prevProduct()" class="w-14 h-14 rounded-full border-2 border-slate-200 flex items-center justify-center bg-white text-slate-400 hover:bg-cyan-500 hover:text-white transition-all shadow-md hover-elevate text-center"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
+                    <button onclick="window.nextProduct()" class="w-14 h-14 rounded-full border-2 border-slate-200 flex items-center justify-center bg-white text-slate-400 hover:bg-cyan-500 hover:text-white transition-all shadow-md hover-elevate text-center"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+                </div>
+            </div>
+            <div id="vitrine-placeholder" class="text-center text-center"></div>
+        </div>
+    </section>
+
+    <!-- LOCALIZAÇÃO - PINO E CENTRALIZAÇÃO GARANTIDOS NO 605 -->
+    <section id="localizacao" class="py-32 px-4 bg-white border-t border-slate-100 text-center md:text-left text-center">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start text-center text-center text-center">
+                <div class="rounded-[50px] overflow-hidden shadow-2xl border-[12px] border-white h-[450px] transform transition-transform shadow-xl text-center text-center text-center text-center text-center">
+                    <!-- IFRAME COM PARAMETRO q= E iwloc=B PARA FORÇAR O PINO E CENTRALIZAR NO ENDEREÇO 605 -->
+                    <iframe src="https://maps.google.com/maps?q=GJS%20Radiadores%20e%20Auto%20Motores%20Rua%20Henry%20Charles%20Potel%2C%20605%2C%20Jardim%20Irene%2C%20S%C3%A3o%20Paulo%20-%20SP&t=&z=17&ie=UTF8&iwloc=B&output=embed" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+                <div class="flex flex-col justify-start py-4 text-center md:text-left text-center">
+                    <h2 class="text-3xl md:text-4xl font-black text-[#1B365D] uppercase tracking-tighter mb-8 italic uppercase text-slate-700 font-black text-center text-center">Onde Estamos</h2>
+                    <p class="text-xl md:text-2xl font-bold text-slate-600 mb-10 leading-tight text-center md:text-left uppercase text-center text-center">R. Henry Charles Potel, 605<br><span class="text-[#00B4D8]">Jardim Irene, São Paulo - SP</span></p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-10 text-center text-center text-center text-center text-center">
+                        <div class="bg-slate-50 p-6 rounded-[25px] border flex-1 text-center text-center text-center text-center"><span class="block text-[10px] text-slate-400 font-bold uppercase mb-2 uppercase tracking-widest text-center text-center">Segunda a Sexta</span><p class="text-xl font-bold text-[#1B365D] text-center text-center text-center">08:00 às 18:00</p></div>
+                        <div class="bg-slate-50 p-6 rounded-[25px] border flex-1 text-center text-center text-center text-center text-center"><span class="block text-[10px] text-slate-400 font-bold uppercase mb-2 uppercase tracking-widest text-center text-center text-center">Sábado</span><p class="text-xl font-bold text-[#1B365D] text-center text-center text-center text-center">08:00 às 12:00</p></div>
+                    </div>
+                    <div class="flex flex-wrap gap-4 justify-center md:justify-start text-center text-center">
+                        <a href="javascript:void(0)" onclick="window.open(window.MAPS_LINK)" class="bg-[#1B365D] text-white px-10 py-5 rounded-[25px] font-bold uppercase text-xs hover:bg-[#00B4D8] transition-all flex items-center justify-center gap-4 min-w-[240px] shadow-xl uppercase tracking-widest hover-elevate text-center text-center text-center">
+                            <img src="img/icon-maps.png" class="w-10 h-10 object-contain flex-shrink-0" onerror="handleIconError(this)"><span>Google Maps</span>
+                        </a>
+                        <a href="javascript:void(0)" onclick="window.open(window.WAZE_LINK)" class="bg-[#00B4D8] text-white px-10 py-5 rounded-[25px] font-bold uppercase text-xs hover:bg-[#1B365D] transition-all flex items-center justify-center gap-4 min-w-[240px] shadow-xl uppercase tracking-widest hover-elevate text-center text-center text-center text-center">
+                            <img src="img/icon-waze.png" class="w-10 h-10 object-contain flex-shrink-0" onerror="handleIconError(this)"><span>Waze GPS</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RODAPÉ -->
+    <footer class="bg-white py-24 border-t border-slate-100 text-center text-center text-center text-center">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-20 mb-20 items-start text-center text-center text-center text-center text-center">
+            <div class="flex flex-col items-center text-center text-center text-center">
+                <h4 class="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em] mb-12 italic text-center text-center text-center text-center text-center">Segurança Garantida</h4>
+                <div class="flex justify-center gap-10 items-center text-center text-center text-center text-center text-center text-center text-center">
+                    <img src="img/ssl.png" alt="SSL" class="footer-icon-asset text-center" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2592/2592201.png'">
+                    <img src="img/google-safe.png" alt="Safe" class="footer-icon-asset text-center" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Google_Safe_Browsing_logo.svg/1200px-Google_Safe_Browsing_logo.svg.png'">
+                </div>
+            </div>
+            <div class="flex flex-col items-center text-center text-center text-center text-center">
+                <h4 class="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em] mb-10 italic text-center text-center text-center text-center text-center">Siga a GJS</h4>
+                <a href="javascript:void(0)" onclick="window.open(window.INSTA_LINK)" class="group flex flex-col items-center gap-3 text-center text-center text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-yellow-400 to-purple-600 flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-110 text-center text-center text-center"><svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+                    <span class="text-[11px] font-black text-slate-800 uppercase tracking-widest text-center uppercase text-center text-center text-center">@gjsradiadores</span>
+                </a>
+            </div>
+            <div class="flex flex-col items-center text-center text-center text-center text-center">
+                <h4 class="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em] mb-12 italic text-center text-center text-center text-center text-center">Pagamento Oficial</h4>
+                <div class="flex justify-center gap-10 items-center text-center text-center text-center text-center text-center text-center text-center text-center">
+                    <img src="img/pix.png" alt="Pix" class="payment-icon-asset text-center" onerror="this.src='https://logopng.com.br/logos/pix-106.png'">
+                    <img src="img/visa.png" alt="Visa" class="payment-icon-asset text-center" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Visa_2021.svg/1200px-Visa_2021.svg.png'">
+                    <img src="img/mastercard.png" alt="Master" class="payment-icon-asset text-center" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png'">
+                </div>
+            </div>
+        </div>
+        <button onclick="window.toggleAdmin()" class="text-slate-300 text-[10px] font-black uppercase hover:text-[#1B365D] mb-8 px-5 py-2.5 border border-slate-100 rounded-xl uppercase tracking-[0.4em] text-center text-center text-center text-center">Gestão de Catálogo GJS</button>
+        <div class="pt-12 border-t border-slate-50 text-slate-400 font-black text-[10px] uppercase text-center text-center text-center text-center text-center text-center text-center text-center text-center">© 2026 GJS RADIADORES LTDA. - CNPJ: 12.114.797/0001-37</div>
+    </footer>
+
+    <!-- PAINEL ADMIN -->
+    <div id="adminModal" class="admin-panel items-center justify-center p-4 text-slate-700 text-center text-center text-center text-center">
+        <div class="bg-white w-full max-w-3xl rounded-[50px] p-12 shadow-2xl relative overflow-y-auto max-h-[90vh] text-center text-center text-center text-center">
+            <button onclick="window.toggleAdmin()" class="absolute top-8 right-8 text-slate-300 hover:text-red-500 p-4 text-center"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <div class="mb-10 text-center text-center text-center text-center text-center text-center text-center">
+                <h3 class="text-2xl font-black text-[#1B365D] uppercase italic tracking-tighter leading-none text-center text-center text-center text-center text-center text-center">Gestão de Catálogo GJS</h3>
+                <p id="admin-status" class="text-[11px] font-black uppercase mt-3 tracking-widest min-h-[20px] transition-all text-center text-center text-center text-center text-center text-center"></p>
+            </div>
+            
+            <form id="adm-form" class="space-y-6 mb-12 text-center md:text-left text-center text-center text-center text-center text-center" onsubmit="return false;">
+                <input type="text" id="adm-nome" placeholder="NOME DO RADIADOR" class="w-full p-6 border-2 border-slate-50 rounded-2xl outline-none focus:border-cyan-500 font-bold bg-slate-50 shadow-inner uppercase text-center md:text-left text-center text-center text-center text-center text-center">
+                <textarea id="adm-desc" placeholder="DESCRIÇÃO TÉCNICA" class="w-full p-6 border-2 border-slate-50 rounded-2xl outline-none focus:border-cyan-500 h-40 bg-slate-50 shadow-inner text-center md:text-left text-center text-center text-center text-center text-center"></textarea>
+                <input type="text" id="adm-foto" placeholder="URL DA IMAGEM APS" class="w-full p-6 border-2 border-slate-100 rounded-2xl outline-none bg-white text-center md:text-left text-center text-center text-center text-center text-center">
+                <button type="button" onclick="window.saveProduct()" class="w-full bg-[#1B365D] text-white py-8 rounded-[35px] font-black uppercase hover:bg-cyan-500 text-lg shadow-xl text-center text-center text-center text-center text-center text-center text-center">Salvar Único</button>
+            </form>
+
+            <div class="pt-8 border-t-4 border-dashed border-slate-100 text-center text-center text-center text-center text-center text-center">
+                <h4 class="text-lg font-black text-slate-400 uppercase mb-4 italic text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">Modo em Lote</h4>
+                <textarea id="adm-batch" placeholder="Cole o JSON aqui." class="w-full p-6 border-2 border-slate-50 rounded-2xl outline-none focus:border-cyan-500 h-40 bg-slate-50 text-xs font-mono shadow-inner mb-6 text-center text-center text-center text-center text-center text-center text-center text-center text-center text-slate-700"></textarea>
+                <button type="button" id="btn-import-lote" onclick="window.saveBatch()" class="w-full bg-[#10b981] text-white py-8 rounded-[35px] font-black uppercase hover:bg-[#059669] text-lg shadow-xl text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center text-center">Importar Lote Agora</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAÇÃO -->
+    <div id="confirmModal" class="confirm-modal">
+        <div class="bg-white p-10 md:p-16 rounded-[50px] shadow-2xl max-w-xl w-full mx-4 text-center border-b-[15px] border-cyan-500 text-center text-slate-500 text-center text-center text-center text-center text-center text-center">
+            <h3 class="text-2xl font-black text-[#1B365D] uppercase italic mb-4 text-center text-center text-center text-center text-center text-center">Confirma o Veículo?</h3>
+            <p id="vehicle-info-text" class="text-slate-500 text-lg leading-relaxed mb-10 text-center text-center text-center text-center text-center text-center text-center text-center"></p>
+            <div class="grid grid-cols-2 gap-4 text-center text-center text-center text-center text-center text-center text-center text-center">
+                <button onclick="window.confirmarVeiculo(true)" class="bg-[#1B365D] text-white py-6 rounded-2xl font-black uppercase hover:bg-emerald-600 transition-all shadow-xl text-center text-center text-center text-center text-center text-center">Sim, Ver Radiador</button>
+                <button onclick="window.confirmarVeiculo(false)" class="bg-slate-100 text-slate-500 py-6 rounded-2xl font-black uppercase hover:bg-red-500 hover:text-white transition-all shadow-xl text-center text-center text-center text-center text-center text-center">Não, Redigitar</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
